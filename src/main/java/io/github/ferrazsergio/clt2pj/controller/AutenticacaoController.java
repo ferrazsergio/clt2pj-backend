@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Autenticação", description = "Endpoints para registro, login e logout de usuários")
 @RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequestMapping("/auth")
 @RequiredArgsConstructor
 public class AutenticacaoController {

@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -15,6 +16,7 @@ import java.util.Arrays;
  * Controller responsável pela consulta dos benefícios oferecidos.
  */
 @Tag(name = "Benefícios", description = "Consulta de benefícios disponíveis")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RestController
 public class BeneficioController {
 

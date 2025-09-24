@@ -19,6 +19,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/simulacao")
 @Tag(name = "Simulação CLT/PJ", description = "Endpoints para simulação e histórico de comparativos financeiros entre regimes CLT e PJ")
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 @RequiredArgsConstructor
 public class SimulacaoController {
 

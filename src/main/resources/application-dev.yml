@@ -1,8 +1,12 @@
 spring:
+  config:
+    import: "optional:file:config/.env.development"
+
   datasource:
     url: jdbc:postgresql://localhost:5432/clt2pjdb
-    username: ${POSTGRES_USER}
-    password: ${POSTGRES_PASSWORD}
+    username: clt2pjuser
+    password: clt2pjpass
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -10,9 +14,10 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
   data:
     redis:
-      host: localhost
+      host: redis
       port: 6379
 
   security:
@@ -43,7 +48,7 @@ spring:
             user-info-uri: https://api.github.com/user
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: 7dd2c499e70ba909ad18db766a8308abe602b0aaef259ceae2724ca960e4df35
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
