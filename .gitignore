@@ -122,3 +122,6 @@ yarn-error.log*
 # Custom
 *.local
 /config/.env
+
+# Ignorar arquivos de configuração com segredos
+src/main/resources/application-dev.yml
