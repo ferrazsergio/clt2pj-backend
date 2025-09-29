@@ -1,5 +1,6 @@
 package io.github.ferrazsergio.clt2pj.dto;
 
+import io.github.ferrazsergio.clt2pj.domain.Simulacao;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
@@ -65,5 +66,21 @@ public class SimulacaoResponseDTO {
         if (valor == null) return null;
         java.text.NumberFormat nf = java.text.NumberFormat.getCurrencyInstance(new java.util.Locale("pt", "BR"));
         return nf.format(valor);
+    }
+
+    public static SimulacaoResponseDTO fromEntity(Simulacao simulacao) {
+        if (simulacao == null) return null;
+
+        return SimulacaoResponseDTO.builder()
+                .salarioLiquidoClt(simulacao.getSalarioClt() != null ?
+                        BigDecimal.valueOf(simulacao.getSalarioClt()) : null)
+                .salarioLiquidoPj(simulacao.getSalarioPj() != null ?
+                        BigDecimal.valueOf(simulacao.getSalarioPj()) : null)
+                .provisaoBeneficios(simulacao.getBeneficios() != null ?
+                        new BigDecimal(simulacao.getBeneficios()) : null)
+                .valorReservaSugerido(BigDecimal.ZERO) // Se quiser armazenar no DB, alterar
+                .comparativoDetalhado(simulacao.getResultadoComparativo() != null ?
+                        Map.of("resultado", simulacao.getResultadoComparativo()) : null)
+                .build();
     }
 }

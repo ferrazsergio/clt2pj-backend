@@ -54,10 +54,8 @@ public class SimulacaoController {
     /**
      * Lista o histórico de simulações do usuário.
      */
-    @Operation(summary = "Listar histórico de simulações", description = "Retorna lista de simulações salvas para o usuário informado.")
-    @GetMapping("/historico")
-    public ResponseEntity<List<Simulacao>> listarHistorico(@RequestParam String usuario) {
-        List<Simulacao> historico = simulacaoService.historico(usuario);
-        return ResponseEntity.ok(historico);
+    @GetMapping("/historico/{usuarioId}")
+    public ResponseEntity<List<SimulacaoResponseDTO>> getHistorico(@PathVariable String usuarioId) {
+        return ResponseEntity.ok(simulacaoService.historicoDTO(usuarioId));
     }
 }

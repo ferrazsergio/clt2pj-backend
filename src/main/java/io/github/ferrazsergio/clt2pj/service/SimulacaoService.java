@@ -188,4 +188,15 @@ public class SimulacaoService {
     public List<Simulacao> historico(String usuarioId) {
         return repository.findByUsuarioId(usuarioId);
     }
+
+    public List<SimulacaoResponseDTO> historicoDTO(String usuarioId) {
+        List<Simulacao> historico = repository.findByUsuarioId(usuarioId);
+
+        List<SimulacaoResponseDTO> dtoList = new ArrayList<>();
+        for (Simulacao simulacao : historico) {
+            dtoList.add(SimulacaoResponseDTO.fromEntity(simulacao));
+        }
+
+        return dtoList;
+    }
 }

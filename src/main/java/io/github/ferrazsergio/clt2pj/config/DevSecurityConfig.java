@@ -1,5 +1,6 @@
 package io.github.ferrazsergio.clt2pj.config;
 
+import io.github.ferrazsergio.clt2pj.security.OAuth2LoginSuccessHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -14,9 +15,13 @@ import org.springframework.security.web.SecurityFilterChain;
 public class DevSecurityConfig {
 
     @Bean
-    public SecurityFilterChain devSecurityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain devSecurityFilterChain(
+            HttpSecurity http,
+            OAuth2LoginSuccessHandler successHandler
+    ) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(cors -> {})
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 "/",
@@ -32,10 +37,12 @@ public class DevSecurityConfig {
                                 "/login/oauth2/**"
                         ).permitAll()
                         .requestMatchers("/auth/oauth2/sucesso").authenticated()
+                        // libera preflight sem precisar de auth
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .oauth2Login(oauth2 -> oauth2
-                        .defaultSuccessUrl("/auth/oauth2/sucesso", true)
+                        .successHandler(successHandler)
                         .failureUrl("/auth/oauth2/erro")
                 );
 
