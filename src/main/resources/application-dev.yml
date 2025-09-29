@@ -1,6 +1,6 @@
 spring:
   config:
-    import: "optional:file:config/.env.development"
+    import: "optional:file:.env.development"
 
   datasource:
     url: jdbc:postgresql://localhost:5432/clt2pjdb
@@ -36,17 +36,6 @@ spring:
             scope:
               - read:user
               - user:email
-        provider:
-          google:
-            authorization-uri: https://accounts.google.com/o/oauth2/v2/auth
-            token-uri: https://oauth2.googleapis.com/token
-            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
-            jwk-set-uri: https://www.googleapis.com/oauth2/v3/certs
-          github:
-            authorization-uri: https://github.com/login/oauth/authorize
-            token-uri: https://github.com/login/oauth/access_token
-            user-info-uri: https://api.github.com/user
-
 jwt:
   secret: 7dd2c499e70ba909ad18db766a8308abe602b0aaef259ceae2724ca960e4df35
 

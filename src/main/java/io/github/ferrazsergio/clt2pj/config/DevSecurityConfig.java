@@ -18,7 +18,25 @@ public class DevSecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/**").permitAll()
+                        .requestMatchers(
+                                "/",
+                                "/auth/login",
+                                "/auth/registro",
+                                "/auth/logout",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/oauth2/**",
+                                "/login/oauth2/**"
+                        ).permitAll()
+                        .requestMatchers("/auth/oauth2/sucesso").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .oauth2Login(oauth2 -> oauth2
+                        .defaultSuccessUrl("/auth/oauth2/sucesso", true)
+                        .failureUrl("/auth/oauth2/erro")
                 );
 
         return http.build();

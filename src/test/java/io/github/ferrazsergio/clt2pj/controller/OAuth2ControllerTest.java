@@ -38,7 +38,7 @@ class OAuth2ControllerTest {
 
         // Testa diretamente o método do controller (sem MockMvc, pois @AuthenticationPrincipal não é populado por default no teste)
         OAuth2Controller controller = new OAuth2Controller(jwtUtil);
-        String token = controller.oauth2Sucesso(principal);
+        String token = String.valueOf(controller.oauth2Sucesso(principal));
 
         // Validação direta
         org.junit.jupiter.api.Assertions.assertEquals("token-jwt-oauth2-mockado", token);
