@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
-
+import java.time.LocalDateTime;
 import java.util.Set;
 
 /**
@@ -35,4 +35,5 @@ public class Usuario {
     @CollectionTable(name = "usuario_papeis", joinColumns = @JoinColumn(name = "usuario_id"))
     @Column(name = "papel")
     private Set<String> papeis;
+
 }

@@ -20,6 +20,20 @@ spring:
       host: redis
       port: 6379
 
+  mail:
+    host: ${SPRING_MAIL_HOST:smtp.office365.com}
+    port: ${SPRING_MAIL_PORT:587}
+    username: ${SPRING_MAIL_USERNAME}
+    password: ${SPRING_MAIL_PASSWORD}
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+    default-encoding: UTF-8
+
   security:
     oauth2:
       client:
@@ -36,6 +50,7 @@ spring:
             scope:
               - read:user
               - user:email
+
 jwt:
   secret: 7dd2c499e70ba909ad18db766a8308abe602b0aaef259ceae2724ca960e4df35
 

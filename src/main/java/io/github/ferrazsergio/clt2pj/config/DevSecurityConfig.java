@@ -30,14 +30,16 @@ public class DevSecurityConfig {
                                 "/auth/logout",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
-                                "/swagger-ui.html"
+                                "/swagger-ui.html",
+                                /*** ADICIONE ESTES: ***/
+                                "/simulacao",
+                                "/simulacao/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/oauth2/**",
                                 "/login/oauth2/**"
                         ).permitAll()
                         .requestMatchers("/auth/oauth2/sucesso").authenticated()
-                        // libera preflight sem precisar de auth
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )

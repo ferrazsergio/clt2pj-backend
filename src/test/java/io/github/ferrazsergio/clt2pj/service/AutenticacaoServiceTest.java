@@ -7,20 +7,24 @@ import io.github.ferrazsergio.clt2pj.exception.AuthException;
 import io.github.ferrazsergio.clt2pj.repository.UsuarioRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Optional;
 import java.util.Set;
 
-/**
- * Testes unitários para o serviço de autenticação (registro e login).
- */
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+
 class AutenticacaoServiceTest {
 
     private final UsuarioRepository usuarioRepository = Mockito.mock(UsuarioRepository.class);
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    private final AutenticacaoService autenticacaoService = new AutenticacaoService(usuarioRepository, passwordEncoder);
+    private final AutenticacaoService autenticacaoService = new AutenticacaoService(
+            usuarioRepository,
+            passwordEncoder
+    );
 
     @Test
     void testRegistrarNovoUsuario() {
@@ -28,15 +32,20 @@ class AutenticacaoServiceTest {
         dto.setEmail("teste@exemplo.com");
         dto.setSenha("123456");
 
-        Mockito.when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.empty());
-        Mockito.when(usuarioRepository.save(Mockito.any(Usuario.class)))
+        when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.save(any(Usuario.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
 
-        Usuario usuario = autenticacaoService.registrar(dto);
+        Usuario usuarioSalvo = autenticacaoService.registrar(dto);
+
+        ArgumentCaptor<Usuario> usuarioCaptor = ArgumentCaptor.forClass(Usuario.class);
+        verify(usuarioRepository).save(usuarioCaptor.capture());
+        Usuario usuario = usuarioCaptor.getValue();
 
         Assertions.assertEquals("teste@exemplo.com", usuario.getEmail());
         Assertions.assertTrue(passwordEncoder.matches("123456", usuario.getSenha()));
         Assertions.assertEquals(Set.of("USER"), usuario.getPapeis());
+        // Outros campos: depende do seu builder, adicione asserts se quiser
     }
 
     @Test
@@ -45,10 +54,20 @@ class AutenticacaoServiceTest {
         dto.setEmail("teste@exemplo.com");
         dto.setSenha("123456");
 
-        Mockito.when(usuarioRepository.findByEmail("teste@exemplo.com"))
-                .thenReturn(Optional.of(Usuario.builder().email("teste@exemplo.com").senha("encoded").papeis(Set.of("USER")).build()));
+        when(usuarioRepository.findByEmail("teste@exemplo.com"))
+                .thenReturn(Optional.of(Usuario.builder()
+                        .email("teste@exemplo.com")
+                        .senha("encoded")
+                        .papeis(Set.of("USER"))
+                        .build()));
 
-        Assertions.assertThrows(AuthException.class, () -> autenticacaoService.registrar(dto));
+        AuthException exception = Assertions.assertThrows(
+                AuthException.class,
+                () -> autenticacaoService.registrar(dto)
+        );
+
+        Assertions.assertEquals("E-mail já cadastrado.", exception.getMessage());
+        verify(usuarioRepository, never()).save(any());
     }
 
     @Test
@@ -63,7 +82,7 @@ class AutenticacaoServiceTest {
                 .papeis(Set.of("USER"))
                 .build();
 
-        Mockito.when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.of(usuario));
 
         Usuario logado = autenticacaoService.autenticar(dto);
 
@@ -82,9 +101,14 @@ class AutenticacaoServiceTest {
                 .papeis(Set.of("USER"))
                 .build();
 
-        Mockito.when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.of(usuario));
+        when(usuarioRepository.findByEmail("teste@exemplo.com")).thenReturn(Optional.of(usuario));
 
-        Assertions.assertThrows(AuthException.class, () -> autenticacaoService.autenticar(dto));
+        AuthException exception = Assertions.assertThrows(
+                AuthException.class,
+                () -> autenticacaoService.autenticar(dto)
+        );
+
+        Assertions.assertEquals("Senha inválida.", exception.getMessage());
     }
 
     @Test
@@ -93,8 +117,13 @@ class AutenticacaoServiceTest {
         dto.setEmail("naoencontrado@exemplo.com");
         dto.setSenha("123456");
 
-        Mockito.when(usuarioRepository.findByEmail("naoencontrado@exemplo.com")).thenReturn(Optional.empty());
+        when(usuarioRepository.findByEmail("naoencontrado@exemplo.com")).thenReturn(Optional.empty());
 
-        Assertions.assertThrows(AuthException.class, () -> autenticacaoService.autenticar(dto));
+        AuthException exception = Assertions.assertThrows(
+                AuthException.class,
+                () -> autenticacaoService.autenticar(dto)
+        );
+
+        Assertions.assertEquals("Usuário não encontrado.", exception.getMessage());
     }
 }
