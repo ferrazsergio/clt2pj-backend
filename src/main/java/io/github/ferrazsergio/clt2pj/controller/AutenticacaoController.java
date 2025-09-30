@@ -1,7 +1,9 @@
 package io.github.ferrazsergio.clt2pj.controller;
 
+import io.github.ferrazsergio.clt2pj.dto.AuthResponseDTO;
 import io.github.ferrazsergio.clt2pj.dto.LoginDTO;
 import io.github.ferrazsergio.clt2pj.dto.RegistroDTO;
+import io.github.ferrazsergio.clt2pj.dto.UsuarioDTO;
 import io.github.ferrazsergio.clt2pj.service.AutenticacaoService;
 import io.github.ferrazsergio.clt2pj.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -10,6 +12,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 
 @Tag(name = "Autenticação", description = "Endpoints para registro, login e logout de usuários")
 @RestController
@@ -23,18 +27,20 @@ public class AutenticacaoController {
 
     @Operation(summary = "Registro de novo usuário")
     @PostMapping("/registro")
-    public ResponseEntity<?> registrar(@RequestBody @Valid RegistroDTO dto) {
+    public ResponseEntity<AuthResponseDTO> registrar(@RequestBody @Valid RegistroDTO dto) {
         var usuario = autenticacaoService.registrar(dto);
         String token = jwtUtil.gerarToken(usuario.getEmail(), usuario.getPapeis());
-        return ResponseEntity.ok().body(token);
+        var usuarioDTO = new UsuarioDTO(usuario.getId(), usuario.getEmail(), new ArrayList<>(usuario.getPapeis()));
+        return ResponseEntity.ok(new AuthResponseDTO(token, usuarioDTO));
     }
 
     @Operation(summary = "Login de usuário")
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody @Valid LoginDTO dto) {
+    public ResponseEntity<AuthResponseDTO> login(@RequestBody @Valid LoginDTO dto) {
         var usuario = autenticacaoService.autenticar(dto);
         String token = jwtUtil.gerarToken(usuario.getEmail(), usuario.getPapeis());
-        return ResponseEntity.ok().body(token);
+        var usuarioDTO = new UsuarioDTO(usuario.getId(), usuario.getEmail(), new ArrayList<>(usuario.getPapeis()));
+        return ResponseEntity.ok(new AuthResponseDTO(token, usuarioDTO));
     }
 
     @Operation(summary = "Logout do usuário")

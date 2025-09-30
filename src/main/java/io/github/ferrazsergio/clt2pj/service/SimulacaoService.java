@@ -154,7 +154,6 @@ public class SimulacaoService {
         BigDecimal salario = request.getSalarioPj() != null ? request.getSalarioPj() : BigDecimal.ZERO;
         BigDecimal reserva = request.getReservaEmergencia() != null ? request.getReservaEmergencia() : BigDecimal.ZERO;
         BigDecimal liquido = salario.subtract(salario.multiply(reserva).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
-        log.debug("Salário líquido PJ calculado: {} (salário: {}, reserva: {})", SimulacaoResponseDTO.formatarReal(liquido), SimulacaoResponseDTO.formatarReal(salario), reserva);
         return liquido;
     }
 
@@ -171,7 +170,6 @@ public class SimulacaoService {
             }
         }
         soma = soma.setScale(2, RoundingMode.HALF_UP);
-        log.debug("Soma dos benefícios: {}", SimulacaoResponseDTO.formatarReal(soma));
         return soma;
     }
 
@@ -179,18 +177,32 @@ public class SimulacaoService {
      * Salva a simulação no banco de dados.
      */
     public Simulacao salvar(Simulacao simulacao) {
-        return repository.save(simulacao);
+
+
+        Simulacao salva = repository.save(simulacao);
+
+        return salva;
     }
 
     /**
      * Consulta o histórico de simulações de um usuário.
      */
     public List<Simulacao> historico(String usuarioId) {
-        return repository.findByUsuarioId(usuarioId);
+        return repository.findByUsuario_Id(usuarioId);
     }
 
-    public List<SimulacaoResponseDTO> historicoDTO(String usuarioId) {
-        List<Simulacao> historico = repository.findByUsuarioId(usuarioId);
+    public List<SimulacaoResponseDTO> historicoDTO(String identificador) {
+        List<Simulacao> historico;
+
+        // Verifica se é um UUID (ID) ou email
+        if (identificador != null && identificador.contains("@")) {
+            // Assume que é email se contém @
+            historico = repository.findByUsuario_Email(identificador);
+        } else {
+            // Assume que é ID
+            historico = repository.findByUsuario_Id(identificador);
+        }
+
 
         List<SimulacaoResponseDTO> dtoList = new ArrayList<>();
         for (Simulacao simulacao : historico) {

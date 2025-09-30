@@ -84,7 +84,7 @@ class SimulacaoServiceTest {
         simulacao2.setResultadoComparativo("Detalhes simulacao 2");
 
         // Mock do repositório
-        when(repository.findByUsuarioId("usuario1")).thenReturn(Arrays.asList(simulacao1, simulacao2));
+        when(repository.findByUsuario_Id("usuario1")).thenReturn(Arrays.asList(simulacao1, simulacao2));
 
         // Executa método
         List<SimulacaoResponseDTO> historicoDTO = service.historicoDTO("usuario1");

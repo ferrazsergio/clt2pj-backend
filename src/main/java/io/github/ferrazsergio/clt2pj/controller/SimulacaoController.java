@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controller para simulações financeiras entre regimes CLT e PJ.
@@ -48,11 +51,15 @@ public class SimulacaoController {
     /**
      * Salva uma nova simulação no banco.
      */
-    @Operation(summary = "Salvar simulação", description = "Persiste uma simulação realizada no histórico do usuário.")
     @PostMapping("/salvar")
     public ResponseEntity<Simulacao> salvarSimulacao(@RequestBody @Valid Simulacao simulacao) {
-        Simulacao salva = simulacaoService.salvar(simulacao);
-        return ResponseEntity.ok(salva);
+
+        try {
+            Simulacao salva = simulacaoService.salvar(simulacao);
+            return ResponseEntity.ok(salva);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     /**
@@ -60,6 +67,22 @@ public class SimulacaoController {
      */
     @GetMapping("/historico/{usuarioId}")
     public ResponseEntity<List<SimulacaoResponseDTO>> getHistorico(@PathVariable String usuarioId) {
-        return ResponseEntity.ok(simulacaoService.historicoDTO(usuarioId));
+        log.info("Recebendo requisição de histórico para usuário: {}", usuarioId);
+
+        // Validação do usuarioId
+        if (usuarioId == null || usuarioId.trim().isEmpty() || "undefined".equals(usuarioId)) {
+            log.warn("UsuarioId inválido recebido: {}", usuarioId);
+            return ResponseEntity.badRequest().body(Collections.emptyList());
+        }
+
+        try {
+            List<SimulacaoResponseDTO> historico = simulacaoService.historicoDTO(usuarioId);
+            log.info("Retornando {} registros para usuário: {}", historico.size(), usuarioId);
+            return ResponseEntity.ok(historico);
+        } catch (Exception e) {
+            log.error("Erro ao buscar histórico para usuário: " + usuarioId, e);
+            return ResponseEntity.internalServerError().build();
+        }
     }
+
 }

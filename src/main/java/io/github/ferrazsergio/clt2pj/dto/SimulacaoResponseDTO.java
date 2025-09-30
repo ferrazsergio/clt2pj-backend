@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -73,14 +74,27 @@ public class SimulacaoResponseDTO {
 
         return SimulacaoResponseDTO.builder()
                 .salarioLiquidoClt(simulacao.getSalarioClt() != null ?
-                        BigDecimal.valueOf(simulacao.getSalarioClt()) : null)
+                        BigDecimal.valueOf(simulacao.getSalarioClt()) : BigDecimal.ZERO)
                 .salarioLiquidoPj(simulacao.getSalarioPj() != null ?
-                        BigDecimal.valueOf(simulacao.getSalarioPj()) : null)
-                .provisaoBeneficios(simulacao.getBeneficios() != null ?
-                        new BigDecimal(simulacao.getBeneficios()) : null)
-                .valorReservaSugerido(BigDecimal.ZERO) // Se quiser armazenar no DB, alterar
-                .comparativoDetalhado(simulacao.getResultadoComparativo() != null ?
-                        Map.of("resultado", simulacao.getResultadoComparativo()) : null)
+                        BigDecimal.valueOf(simulacao.getSalarioPj()) : BigDecimal.ZERO)
+                .provisaoBeneficios(BigDecimal.ZERO)
+                .valorReservaSugerido(BigDecimal.ZERO)
+                .comparativoDetalhado(parseComparativoDetalhado(simulacao))
                 .build();
+    }
+
+    // Método auxiliar para parse seguro do comparativo detalhado
+    private static Map<String, Object> parseComparativoDetalhado(Simulacao simulacao) {
+        Map<String, Object> comparativo = new HashMap<>();
+
+        // Adiciona informações básicas da simulação
+        comparativo.put("dataCriacao", simulacao.getDataCriacao() != null ?
+                simulacao.getDataCriacao().toString() : "");
+        comparativo.put("salarioClt", simulacao.getSalarioClt());
+        comparativo.put("salarioPj", simulacao.getSalarioPj());
+        comparativo.put("beneficios", simulacao.getBeneficios());
+        comparativo.put("resultadoComparativo", simulacao.getResultadoComparativo());
+
+        return comparativo;
     }
 }

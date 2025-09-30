@@ -8,5 +8,6 @@ import java.util.List;
  * Repositório para operações de persistência da entidade Simulacao.
  */
 public interface SimulacaoRepository extends JpaRepository<Simulacao, String> {
-    List<Simulacao> findByUsuarioId(String usuarioId);
+    List<Simulacao> findByUsuario_Id(String usuarioId);
+    List<Simulacao> findByUsuario_Email(String email);
 }
