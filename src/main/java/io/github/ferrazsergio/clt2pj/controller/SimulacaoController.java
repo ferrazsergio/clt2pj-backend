@@ -53,6 +53,7 @@ public class SimulacaoController {
      */
     @PostMapping("/salvar")
     public ResponseEntity<Simulacao> salvarSimulacao(@RequestBody @Valid Simulacao simulacao) {
+        log.info("Recebendo simulação para salvar: {}", simulacao);
 
         try {
             Simulacao salva = simulacaoService.salvar(simulacao);

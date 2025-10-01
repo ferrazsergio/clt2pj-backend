@@ -67,22 +67,11 @@ public class SimulacaoService {
         List<String> cltBeneficiosSelecionados = request.getBeneficiosSelecionados() != null ? request.getBeneficiosSelecionados() : Collections.emptyList();
         List<String> pjBeneficiosSelecionados = request.getBeneficiosSelecionados() != null ? request.getBeneficiosSelecionados() : Collections.emptyList();
 
-        Map<String, Object> comparativoDetalhado = new HashMap<>();
-        comparativoDetalhado.put("clt", Map.of(
-                "salarioLiquido", salarioLiquidoClt,
-                "inss", inss,
-                "irrf", irrf,
-                "totalBeneficios", totalBeneficiosClt,
-                "beneficiosSelecionados", cltBeneficiosSelecionados
-        ));
-        comparativoDetalhado.put("pj", Map.of(
-                "salarioLiquido", salarioLiquidoPj,
-                "tipoTributacao", request.getTipoTributacao(),
-                "reservaEmergencia", request.getReservaEmergencia(),
-                "totalBeneficios", totalBeneficiosPj,
-                "beneficiosSelecionados", pjBeneficiosSelecionados
-        ));
-        comparativoDetalhado.put("valorReservaSugerido", valorReservaSugerido);
+        Map<String, Object> comparativoDetalhado = montarComparativoDetalhado(
+                salarioLiquidoClt, inss, irrf, totalBeneficiosClt, cltBeneficiosSelecionados,
+                salarioLiquidoPj, request.getTipoTributacao(), request.getReservaEmergencia(), totalBeneficiosPj, pjBeneficiosSelecionados, // ← Já é BigDecimal
+                valorReservaSugerido
+        );
 
         log.info("Simulação concluída. Comparativo detalhado: {}", comparativoDetalhado);
 
@@ -93,6 +82,78 @@ public class SimulacaoService {
                 .valorReservaSugerido(valorReservaSugerido)
                 .comparativoDetalhado(comparativoDetalhado)
                 .build();
+    }
+
+    /**
+     * Monta o comparativo detalhado para retorno e histórico.
+     */
+    public Map<String, Object> montarComparativoDetalhado(
+            BigDecimal salarioLiquidoClt, BigDecimal inss, BigDecimal irrf, BigDecimal totalBeneficiosClt, List<String> cltBeneficiosSelecionados,
+            BigDecimal salarioLiquidoPj, String tipoTributacao, BigDecimal reservaEmergencia, BigDecimal totalBeneficiosPj, List<String> pjBeneficiosSelecionados, // ← CORREÇÃO: BigDecimal reservaEmergencia
+            BigDecimal valorReservaSugerido
+    ) {
+        Map<String, Object> comparativoDetalhado = new HashMap<>();
+
+        // CLT
+        comparativoDetalhado.put("clt", Map.of(
+                "salarioLiquido", salarioLiquidoClt != null ? salarioLiquidoClt : BigDecimal.ZERO,
+                "inss", inss != null ? inss : BigDecimal.ZERO,
+                "irrf", irrf != null ? irrf : BigDecimal.ZERO,
+                "totalBeneficios", totalBeneficiosClt != null ? totalBeneficiosClt : BigDecimal.ZERO,
+                "beneficiosSelecionados", cltBeneficiosSelecionados != null ? cltBeneficiosSelecionados : Collections.emptyList()
+        ));
+
+        // PJ
+        comparativoDetalhado.put("pj", Map.of(
+                "salarioLiquido", salarioLiquidoPj != null ? salarioLiquidoPj : BigDecimal.ZERO,
+                "tipoTributacao", tipoTributacao != null ? tipoTributacao : "NÃO INFORMADO",
+                "reservaEmergencia", reservaEmergencia != null ? reservaEmergencia : BigDecimal.ZERO, // ← AGORA É BigDecimal
+                "totalBeneficios", totalBeneficiosPj != null ? totalBeneficiosPj : BigDecimal.ZERO,
+                "beneficiosSelecionados", pjBeneficiosSelecionados != null ? pjBeneficiosSelecionados : Collections.emptyList()
+        ));
+
+        comparativoDetalhado.put("valorReservaSugerido", valorReservaSugerido != null ? valorReservaSugerido : BigDecimal.ZERO);
+        return comparativoDetalhado;
+    }
+
+    /**
+     * Monta o comparativo detalhado a partir de uma entidade Simulacao (usado para histórico).
+     */
+    public Map<String, Object> montarComparativoDetalhadoFromEntity(Simulacao simulacao) {
+        // CLT
+        BigDecimal salarioClt = simulacao.getSalarioClt() != null ? simulacao.getSalarioClt() : BigDecimal.ZERO;
+        BigDecimal inss = calcularInss2025(salarioClt);
+        BigDecimal irrf = calcularIrrf2025(salarioClt, inss);
+
+        BigDecimal totalBeneficiosClt = simulacao.getTotalBeneficiosClt() != null ? simulacao.getTotalBeneficiosClt() : BigDecimal.ZERO;
+        List<String> cltBeneficiosSelecionados = simulacao.getBeneficiosSelecionadosClt() != null
+                ? simulacao.getBeneficiosSelecionadosClt()
+                : Collections.emptyList();
+
+        // PJ
+        BigDecimal salarioPj = simulacao.getSalarioPj() != null ? simulacao.getSalarioPj() : BigDecimal.ZERO;
+        BigDecimal reservaEmergencia = simulacao.getReservaEmergencia() != null ? simulacao.getReservaEmergencia() : BigDecimal.ZERO;
+        BigDecimal salarioLiquidoPj = salarioPj.subtract(salarioPj.multiply(reservaEmergencia).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal totalBeneficiosPj = simulacao.getTotalBeneficiosPj() != null ? simulacao.getTotalBeneficiosPj() : BigDecimal.ZERO;
+        List<String> pjBeneficiosSelecionados = simulacao.getBeneficiosSelecionadosPj() != null
+                ? simulacao.getBeneficiosSelecionadosPj()
+                : Collections.emptyList();
+
+        BigDecimal valorReservaSugerido = simulacao.getValorReservaSugerido() != null ? simulacao.getValorReservaSugerido() : totalBeneficiosClt;
+
+        // --- ALTERAÇÃO: garantir que tipoTributacao nunca seja nulo ou vazio ---
+        String tipoTributacao = simulacao.getTipoTributacao();
+        if (tipoTributacao == null || tipoTributacao.trim().isEmpty() || tipoTributacao.trim().equalsIgnoreCase("null")) {
+            tipoTributacao = "NÃO INFORMADO";
+        }
+
+        return montarComparativoDetalhado(
+                salarioClt.subtract(inss).subtract(irrf).add(totalBeneficiosClt).setScale(2, RoundingMode.HALF_UP),
+                inss, irrf, totalBeneficiosClt, cltBeneficiosSelecionados,
+                salarioLiquidoPj, tipoTributacao, reservaEmergencia, totalBeneficiosPj, pjBeneficiosSelecionados,
+                valorReservaSugerido
+        );
     }
 
     /**
@@ -177,11 +238,9 @@ public class SimulacaoService {
      * Salva a simulação no banco de dados.
      */
     public Simulacao salvar(Simulacao simulacao) {
+        log.info("Simulação recebida no service: {}", simulacao);
 
-
-        Simulacao salva = repository.save(simulacao);
-
-        return salva;
+        return repository.save(simulacao);
     }
 
     /**
@@ -193,22 +252,23 @@ public class SimulacaoService {
 
     public List<SimulacaoResponseDTO> historicoDTO(String identificador) {
         List<Simulacao> historico;
-
-        // Verifica se é um UUID (ID) ou email
         if (identificador != null && identificador.contains("@")) {
-            // Assume que é email se contém @
             historico = repository.findByUsuario_Email(identificador);
         } else {
-            // Assume que é ID
             historico = repository.findByUsuario_Id(identificador);
         }
 
-
         List<SimulacaoResponseDTO> dtoList = new ArrayList<>();
         for (Simulacao simulacao : historico) {
-            dtoList.add(SimulacaoResponseDTO.fromEntity(simulacao));
+            Map<String, Object> comparativoDetalhado = montarComparativoDetalhadoFromEntity(simulacao);
+            dtoList.add(SimulacaoResponseDTO.builder()
+                    .salarioLiquidoClt(simulacao.getSalarioClt() != null ? simulacao.getSalarioClt() : BigDecimal.ZERO)
+                    .salarioLiquidoPj(simulacao.getSalarioPj() != null ? simulacao.getSalarioPj() : BigDecimal.ZERO)
+                    .provisaoBeneficios(simulacao.getTotalBeneficiosClt() != null ? simulacao.getTotalBeneficiosClt() : BigDecimal.ZERO)
+                    .valorReservaSugerido(simulacao.getValorReservaSugerido() != null ? simulacao.getValorReservaSugerido() : BigDecimal.ZERO)
+                    .comparativoDetalhado(comparativoDetalhado)
+                    .build());
         }
-
         return dtoList;
     }
 }

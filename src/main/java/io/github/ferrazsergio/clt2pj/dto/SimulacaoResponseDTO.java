@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -69,32 +68,26 @@ public class SimulacaoResponseDTO {
         return nf.format(valor);
     }
 
-    public static SimulacaoResponseDTO fromEntity(Simulacao simulacao) {
+    /**
+     * Monta o DTO a partir da entidade, usando o cálculo detalhado do service.
+     * Agora recebe o comparativoDetalhado já calculado.
+     */
+    public static SimulacaoResponseDTO fromEntity(
+            Simulacao simulacao,
+            BigDecimal salarioLiquidoClt,
+            BigDecimal salarioLiquidoPj,
+            BigDecimal provisaoBeneficios,
+            BigDecimal valorReservaSugerido,
+            Map<String, Object> comparativoDetalhado
+    ) {
         if (simulacao == null) return null;
 
         return SimulacaoResponseDTO.builder()
-                .salarioLiquidoClt(simulacao.getSalarioClt() != null ?
-                        BigDecimal.valueOf(simulacao.getSalarioClt()) : BigDecimal.ZERO)
-                .salarioLiquidoPj(simulacao.getSalarioPj() != null ?
-                        BigDecimal.valueOf(simulacao.getSalarioPj()) : BigDecimal.ZERO)
-                .provisaoBeneficios(BigDecimal.ZERO)
-                .valorReservaSugerido(BigDecimal.ZERO)
-                .comparativoDetalhado(parseComparativoDetalhado(simulacao))
+                .salarioLiquidoClt(salarioLiquidoClt)
+                .salarioLiquidoPj(salarioLiquidoPj)
+                .provisaoBeneficios(provisaoBeneficios)
+                .valorReservaSugerido(valorReservaSugerido)
+                .comparativoDetalhado(comparativoDetalhado)
                 .build();
-    }
-
-    // Método auxiliar para parse seguro do comparativo detalhado
-    private static Map<String, Object> parseComparativoDetalhado(Simulacao simulacao) {
-        Map<String, Object> comparativo = new HashMap<>();
-
-        // Adiciona informações básicas da simulação
-        comparativo.put("dataCriacao", simulacao.getDataCriacao() != null ?
-                simulacao.getDataCriacao().toString() : "");
-        comparativo.put("salarioClt", simulacao.getSalarioClt());
-        comparativo.put("salarioPj", simulacao.getSalarioPj());
-        comparativo.put("beneficios", simulacao.getBeneficios());
-        comparativo.put("resultadoComparativo", simulacao.getResultadoComparativo());
-
-        return comparativo;
     }
 }

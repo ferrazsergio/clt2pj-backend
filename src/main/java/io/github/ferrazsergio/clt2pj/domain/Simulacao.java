@@ -6,10 +6,9 @@ import jakarta.validation.constraints.Positive;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.math.BigDecimal; // <-- Adicione para usar BigDecimal
 
-/**
- * Entidade que representa uma simulação financeira entre regimes CLT e PJ.
- */
 @Entity
 @Table(name = "simulacoes")
 @Data
@@ -29,11 +28,11 @@ public class Simulacao {
 
     @Positive(message = "Salário CLT deve ser positivo")
     @Column(name = "salario_clt", nullable = false)
-    private Double salarioClt;
+    private BigDecimal salarioClt; // <-- Troque Double para BigDecimal
 
     @Positive(message = "Salário PJ deve ser positivo")
     @Column(name = "salario_pj", nullable = false)
-    private Double salarioPj;
+    private BigDecimal salarioPj; // <-- Troque Double para BigDecimal
 
     @Column(name = "beneficios")
     private String beneficios;
@@ -43,4 +42,36 @@ public class Simulacao {
 
     @Column(name = "data_criacao", nullable = false)
     private LocalDateTime dataCriacao;
+
+    // Valor total de benefícios CLT
+    @Column(name = "total_beneficios_clt")
+    private BigDecimal totalBeneficiosClt;
+
+    // Valor total de benefícios PJ
+    @Column(name = "total_beneficios_pj")
+    private BigDecimal totalBeneficiosPj;
+
+    // Benefícios selecionados CLT
+    @ElementCollection
+    @CollectionTable(name = "simulacao_beneficios_clt", joinColumns = @JoinColumn(name = "simulacao_id"))
+    @Column(name = "beneficio_clt")
+    private List<String> beneficiosSelecionadosClt;
+
+    // Benefícios selecionados PJ
+    @ElementCollection
+    @CollectionTable(name = "simulacao_beneficios_pj", joinColumns = @JoinColumn(name = "simulacao_id"))
+    @Column(name = "beneficio_pj")
+    private List<String> beneficiosSelecionadosPj;
+
+    // Reserva de emergência
+    @Column(name = "reserva_emergencia")
+    private BigDecimal reservaEmergencia;
+
+    // Valor sugerido de reserva
+    @Column(name = "valor_reserva_sugerido")
+    private BigDecimal valorReservaSugerido;
+
+    // Tipo de tributação PJ
+    @Column(name = "tipo_tributacao")
+    private String tipoTributacao;
 }

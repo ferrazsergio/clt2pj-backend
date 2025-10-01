@@ -2,6 +2,7 @@ package io.github.ferrazsergio.clt2pj.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -37,6 +38,7 @@ public class SimulacaoRequestDTO {
     private BigDecimal salarioPj;
 
     @NotNull(message = "Tipo de tributação para PJ é obrigatório")
+    @NotBlank(message = "Tipo de tributação para PJ não pode estar em branco")
     @Schema(description = "Tipo de tributação para PJ (MEI, Simples Nacional, Lucro Presumido, etc)", example = "Simples Nacional")
     private String tipoTributacao;
 
